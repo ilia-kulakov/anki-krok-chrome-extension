@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Anki Krok",
+    "description": "Extension allows to build cards based on 'Polski Krok po Kroku' online course",
+    "version": "0.1",
+    "action": {
+      "default_icon": "krok-128.png"
+    },
+    "content_scripts": [
+        {
+          "js": ["./src/js/jquery-3.7.1.min.js", "./src/js/content.js"],
+          "matches": [
+            "https://e-polish.eu/ecoursebook/kurs/*"
+          ]
+        }
+    ],
+    "permissions": [
+      "downloads"
+    ],
+    "background": {
+      "service_worker": "./src/js/background.js"
+    }
+  }
