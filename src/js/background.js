@@ -1,5 +1,6 @@
 const DOWNLOAD_DIR = 'krok-po-kroku';
 const ANKI_URL = 'http://127.0.0.1:8765';
+const WIKI_URL = 'https://pl.wiktionary.org/wiki/';
 
 let notes = [];
 
@@ -46,12 +47,41 @@ chrome.downloads.onChanged.addListener((delta) => {
             return;
         }
         const note = notes[index];
-        const ankiNote = assembleAnkiNote(note);
-        postAnkiNote(ankiNote, note);
-
-        notes = notes.splice(index, 1);
+        getTranscription(note.term).then((transcription) => {
+            note.transcription = transcription;
+            const ankiNote = assembleAnkiNote(note);
+            postAnkiNote(ankiNote, note);
+        });
+        notes = notes.splice(index, 1);     
     }
 });
+
+function getTranscription(term) {
+    return fetch(WIKI_URL + term.toLowerCase())
+        .then((response) => response.text())
+        .then((html) => {
+            const headingRegexp = /<span class="mw-page-title-main">(.+?)<\/span>/;
+            const headingMatch = html.match(headingRegexp);
+            if(!headingMatch[1] || term.toLowerCase() !== headingMatch[1].toLowerCase()) {
+                console.warn(`ERROR: connot find a transcription for "${term}"`);
+                return ''
+            }
+
+            const transcriptionRegexp = /<span.*?class="ipa".*?>(.+?)<\/span>/g;
+            const transcriptionMatches = [...html.matchAll(transcriptionRegexp)];
+
+            if(!transcriptionMatches[1] || !transcriptionMatches[1][1]) {
+                console.warn(`ERROR: connot find a transcription for "${term}"`);
+                return ''
+            }
+
+            return transcriptionMatches[1][1];
+        })
+        .catch(() => {
+            console.error(`ERROR: connot get a transcription for "${term}"`);
+            return '';
+        });
+}
 
 function assembleAnkiNote(note) {
     return {
@@ -63,6 +93,7 @@ function assembleAnkiNote(note) {
                 fields: {
                     Example: note.example ? note.example : note.term,
                     Term: note.term,
+                    Transcription: note.transcription,
                 },
                 options: {
                     allowDuplicate: false,

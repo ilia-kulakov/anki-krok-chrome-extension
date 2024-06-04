@@ -19,5 +19,8 @@
     ],
     "background": {
       "service_worker": "./src/js/background.js"
-    }
+    },
+    "host_permissions": [
+        "https://pl.wiktionary.org/wiki/*"
+    ]
   }
