@@ -67,15 +67,15 @@ function getTranscription(term) {
                 return ''
             }
 
-            const transcriptionRegexp = /<span.*?class="ipa".*?>(.+?)<\/span>/g;
-            const transcriptionMatches = [...html.matchAll(transcriptionRegexp)];
+            const transcriptionRegexp = /<span.*?class="ipa".*?>(.+?)<\/span>/;
+            const transcriptionMatch = html.match(transcriptionRegexp);
 
-            if(!transcriptionMatches[1] || !transcriptionMatches[1][1]) {
+            if(!transcriptionMatch[1]) {
                 console.warn(`ERROR: connot find a transcription for "${term}"`);
                 return ''
             }
 
-            return transcriptionMatches[1][1];
+            return transcriptionMatch[1];
         })
         .catch(() => {
             console.error(`ERROR: connot get a transcription for "${term}"`);
